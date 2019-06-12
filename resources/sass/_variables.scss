@@ -1,0 +1,48 @@
+
+// Body
+$body-bg: #333;
+$body-color: white;
+
+// Borders
+$laravel-border-color: darken($body-bg, 10%);
+$list-group-border-color: $laravel-border-color;
+
+$card-border-color: $laravel-border-color;
+
+// Typography
+$font-family-sans-serif: 'Titillium Web', sans-serif;
+$font-size-base: 0.9rem;
+$line-height-base: 1.6;
+
+// Colors
+$blue:       #61C7FF;
+$indigo:     #5932B7;
+$purple:     #9061FF;
+$pink:       #e83e8c;
+$red:        #D32637;
+$orange:     #f8cb00;
+$yellow:     #EEFF52;
+$green:      #2EBE5D;
+$teal:       #6AFF9A;
+$cyan:       #4088AF;
+$light-blue: #AFE3FF;
+
+// Inputs
+$input-bg: #2a2a2a;
+$input-color: #ccc;
+$input-border-color: #1a1a1a;
+$input-placeholder-color: #555;
+
+
+// Cards
+$card-bg: #434343;
+
+$alert-bg-level:                    10;
+$alert-border-level:                0;
+$alert-color-level:                 0;
+
+// Dropdown
+$dropdown-bg: #232323;
+$dropdown-link-color: white;
+$dropdown-link-hover-bg: $blue;
+

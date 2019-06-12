@@ -1,0 +1,413 @@
+cameras:
+    camera1:
+        type: perspective
+
+lights:
+    light1:
+        type: directional
+        direction: [0, 1, -.5]
+        diffuse: .3
+        ambient: 1
+textures:
+    airports:
+        url: Sprites@2x.png
+        density: 2
+        sprites:
+            controlled: [0,0,64,64]
+            uncontrolled: [64,0,64,64]
+
+styles:
+    airport-icons:
+        base: points
+        draw:
+            sprite: function() { return feature.kind; }
+            sprite_default: controlled
+            texture: airports
+sources:
+    nextzen:
+        type: GeoJSON
+        url: https://tile.nextzen.org/tilezen/vector/v1/512/all/{z}/{x}/{y}.json
+        url_params:
+            api_key: J340hxOHS_qfDrYU1iUIGg
+        max_zoom: 16
+        tile_size: 512
+    nextzen_k:
+        type: MVT
+        url: https://tile.nextzen.org/tilezen/vector/v1/all/{z}/{x}/{y}.mvt
+        url_params:
+            api_key: J340hxOHS_qfDrYU1iUIGg
+        max_zoom: 16
+    openaip:
+        type: GeoJSON
+        url: output.json
+    airports:
+        type: GeoJSON
+        url: air.json
+    firs:
+        type: GeoJSON
+        url: firs.json
+layers:
+    earth:
+        data: { source: nextzen }
+        draw:
+            polygons:
+                order: 1
+                color: '#333'
+    water:
+        data: { source: nextzen }
+        draw:
+            polygons:
+                order: function() { return feature.sort_rank; }
+                color: '#1a1a1a'
+    landuse:
+        data: { source: nextzen}
+        grass:
+            filter:
+                kind: grass
+            draw:
+                polygons:
+                    order: function() { return feature.sort_rank; }
+                    color: green
+        runway:
+            filter: {kind: [runway]}
+            draw:
+                polygons:
+                    color: [0.173, 0.173, 0.173, 1.00]
+                    order: function() { return 300; }
+        apron:
+            filter: {kind: [apron]}
+            draw:
+                polygons:
+                    color: '#434343'
+                    order: function() { return feature.sort_rank; }
+    firs:
+        data: { source: firs }
+        draw:
+            lines:
+                dash: [5, 4]
+                order: 5000
+                color: [1 ,1 ,1 , 0.25]
+                width:
+                - - 9
+                  - 2.0px
+                - - 12
+                  - 2.25px
+                - - 14
+                  - 1.6px
+                - - 15
+                  - 0.15px
+                - - 16
+                  - 5.25px
+                - - 17
+                  - 12m
+    boundries:
+        data: {source: openaip }
+        b:
+            filter: { kind: b }
+            draw:
+                lines:
+                    order: 1000
+                    color: '#42d0f7'
+                    width:
+                    - - 9
+                      - 1.0px
+                    - - 12
+                      - 1.25px
+                    - - 14
+                      - 1.6px
+                    - - 15
+                      - 0.15px
+                    - - 16
+                      - 5.25px
+                    - - 17
+                      - 12m
+        c:
+            filter: { kind: c }
+            draw:
+                lines:
+                    order: 1000
+                    color: '#f241ec'
+                    width:
+                    - - 9
+                      - 1.0px
+                    - - 12
+                      - 1.25px
+                    - - 14
+                      - 1.6px
+                    - - 15
+                      - 0.15px
+                    - - 16
+                      - 5.25px
+                    - - 17
+                      - 12m
+        d:
+            filter: { kind: d }
+            draw:
+                lines:
+                    dash: [3, 2]
+                    order: 1000
+                    color: '#42d0f7'
+                    width:
+                    - - 9
+                      - 1.0px
+                    - - 12
+                      - 1.25px
+                    - - 14
+                      - 1.6px
+                    - - 15
+                      - 0.15px
+                    - - 16
+                      - 5.25px
+                    - - 17
+                      - 12m
+        danger:
+            filter: { kind: danger }
+            draw:
+                lines:
+                    visible: false
+                    order: 1000
+                    color: red
+                    width:
+                    - - 9
+                      - 1.0px
+                    - - 12
+                      - 1.25px
+                    - - 14
+                      - 1.6px
+                    - - 15
+                      - 0.15px
+                    - - 16
+                      - 5.25px
+                    - - 17
+                      - 12m
+    airports:
+        data:
+            source: airports
+        filter: {not: {kind: [closed, heliport]}, $zoom: {max: 17}}
+
+        large_airport:
+            filter: {kind: large_airport, $zoom: {min: 6}}
+            draw:
+                airport-icons:
+                    order: 2000
+                    priority: 2
+                    interactive: true
+                    sprite: controlled
+                    cull_from_tile: false
+                    collide: true
+                    visible: function() { return feature.icao !== ""; }
+                    text:
+                        text_source: function() { return feature.icao; }
+                        collide: global.collide
+                        optional: true
+                        anchor: [bottom, top, right, left, bottom-right, bottom-left, top-right, top-left]
+                        font:
+                            size: 12pt
+                            family: Helvetica
+                            fill: white
+                            stroke:
+                                color: black
+                                width: 3px
+        medium_airport:
+            filter: {kind: medium_airport, $zoom: {min: 8}}
+            draw:
+                airport-icons:
+                    order: 2000
+                    priority: 3
+                    interactive: true
+                    sprite: |
+                        function () {
+                            if (feature.atc)
+                                return "controlled"
+                            else
+                                return "uncontrolled"
+                        }
+                    cull_from_tile: false
+                    collide: true
+                    visible: function() { return feature.icao !== ""; }
+                    text:
+                        text_source: function() { return feature.icao; }
+                        collide: global.collide
+                        optional: true
+                        anchor: [bottom, top, right, left, bottom-right, bottom-left, top-right, top-left]
+                        font:
+                            size: 12pt
+                            family: Helvetica
+                            fill: white
+                            stroke:
+                                color: black
+                                width: 3px
+        small_airport:
+            filter: {kind: small_airport, $zoom: {min: 10}}
+            draw:
+                airport-icons:
+                    order: 2000
+                    priority: 4
+                    interactive: true
+                    sprite: |
+                        function () {
+                            if (feature.atc)
+                                return "controlled"
+                            else
+                                return "uncontrolled"
+                        }
+                    cull_from_tile: false
+                    collide: true
+                    visible: function() { return feature.icao !== ""; }
+                    text:
+                        text_source: function() { return feature.icao; }
+                        collide: global.collide
+                        optional: true
+                        anchor: [bottom, top, right, left, bottom-right, bottom-left, top-right, top-left]
+                        font:
+                            size: 12pt
+                            family: Helvetica
+                            fill: white
+                            stroke:
+                                color: black
+                                width: 3px
+    roads:
+        data: { source: nextzen }
+        filter:
+            not: { kind: [path, rail, ferry] }
+        aeroway:
+            filter:
+                kind: aeroway
+                kind_detail: taxiway
+            draw:
+                lines:
+                    blend: overlay
+                    order: 130
+                    color: '#ffcc00'
+                    width: 5
+                    outline:
+                        color: black
+                        width: 2
+        runway:
+            filter:
+                kind: aeroway
+                kind_detail: runway
+            draw:
+                lines:
+                    order: function() { return feature.sort_rank; }
+                    color: white
+                    cap: square
+                    width: 36
+        draw:
+            lines:
+                order: function() { return feature.sort_rank; }
+                color: gray
+                width: 8
+                cap: round
+        highway:
+            filter: { kind: [highway], $zoom: { max: 13 }}
+            draw:
+                lines:
+                    order: function() { return feature.sort_rank; }
+                    color: '#cc6666'
+                    width: 40
+                    outline:
+                        color: grey
+                        width: 1.5
+        minor_road:
+            filter: { kind: [minor_road], $zoom: { min: 13 }}
+            draw:
+                lines:
+                    order: function() { return feature.sort_rank; }
+                    color: grey
+                    width: 5
+    pois:
+        data: { source: nextzen }
+        gates:
+            filter:
+                kind: aeroway_gate
+            draw:
+                points:
+                    priority: 1
+                    interactive: true
+                    color: [0.071, 0.996, 0.992, 1.00]
+                    size: 8px
+                    cull_from_tile: false
+                    collide: false
+                    text:
+                        text_source: function() { return feature.ref; }
+                        collide: global.collide
+                        optional: true
+                        anchor: [bottom, top, right, left, bottom-right, bottom-left, top-right, top-left]
+                        font:
+                            size: 11pt
+                            family: Lucida Grande
+                            fill: white
+    places:
+        data: {source: nextzen}
+        city:
+            filter: {$zoom: {min: 8}}
+            draw:
+                text:
+                    font:
+                        fill: '#cccccc'
+                        weight: 500
+                        size: 14px
+                        family: Helvetica
+    buildings:
+        data: { source: nextzen }
+        draw:
+            polygons:
+                order: function() { return feature.sort_rank; }
+                color: |
+                    function () {
+                        var h = feature.height || 20;
+                        h = Math.min((h + 50)/ 255, .8); // max brightness: .8
+                        h = Math.max(h, .4); // min brightness: .4
+                        return [h, h, h];
+                    }
+        3d-buildings:
+            filter: { $zoom: { min: 15 } }
+            draw:
+                polygons:
+                    extrude: function () { return feature.height > 20 || $zoom >= 16; }
+    road_labels:
+        data: { source: nextzen, layer: roads }
+        taxiways:
+            filter: { kind_detail: taxiway, $zoom: { min: 15 } }
+            draw:
+                text:
+                    text_source: |
+                        function () {
+                            if (!feature.name)
+                                return feature.ref;
+                            else
+                                return feature.name;
+                        }
+                    font:
+                        fill: white
+                        weight: 500
+                        size: 12px
+                        family: Helvetica
+                        stroke: { color: black, width: 3 }
+        runways:
+            filter: { kind_detail: runway, $zoom: { min: 12 } }
+            draw:
+                text:
+                    text_source: |
+                        function () {
+                            if (!feature.ref)
+                                return feature.name;
+                            else
+                                return feature.ref;
+                        }
+                    font:
+                        fill: white
+                        weight: 500
+                        size: 15px
+                        family: Helvetica
+                        stroke: { color: black, width: 3 }
+        aeroway:
+            filter: { kind: aeroway_gate }
+            draw:
+                text:
+                    font:
+                        fill: white
+                        weight: 500
+                        size: 12px
+                        family: Helvetica
