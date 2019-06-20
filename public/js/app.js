@@ -2208,7 +2208,12 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-// @ is an alias to /src
+//
+function nmToMeters(nm) {
+  return nm * 1852;
+} // @ is an alias to /src
+
+
 
 
  // eslint-disable-next-line no-unused-vars
@@ -2222,6 +2227,46 @@ var vatsimTarget = leaflet__WEBPACK_IMPORTED_MODULE_0___default.a.icon({
   iconUrl: "/img/aircraftTarget.svg",
   iconSize: [32, 32],
   iconAnchor: [16, 16],
+  popupAnchor: [-20, 20]
+});
+var depTarget = leaflet__WEBPACK_IMPORTED_MODULE_0___default.a.icon({
+  iconUrl: "/img/map/depTarget.svg",
+  iconSize: [24, 24],
+  iconAnchor: [12, 12]
+});
+var arrTarget = leaflet__WEBPACK_IMPORTED_MODULE_0___default.a.icon({
+  iconUrl: "/img/map/arrTarget.svg",
+  iconSize: [24, 24],
+  iconAnchor: [12, 12]
+});
+var atc_del = leaflet__WEBPACK_IMPORTED_MODULE_0___default.a.icon({
+  iconUrl: "/img/ATC_DEL.svg",
+  iconSize: [16, 16],
+  iconAnchor: [8, 8],
+  popupAnchor: [-20, 20]
+});
+var atc_gnd = leaflet__WEBPACK_IMPORTED_MODULE_0___default.a.icon({
+  iconUrl: "/img/ATC_GND.svg",
+  iconSize: [16, 16],
+  iconAnchor: [8, 8],
+  popupAnchor: [-20, 20]
+});
+var atc_twr = leaflet__WEBPACK_IMPORTED_MODULE_0___default.a.icon({
+  iconUrl: "/img/ATC_TWR.svg",
+  iconSize: [16, 16],
+  iconAnchor: [8, 8],
+  popupAnchor: [-20, 20]
+});
+var atc_app = leaflet__WEBPACK_IMPORTED_MODULE_0___default.a.icon({
+  iconUrl: "/img/ATC_APP.svg",
+  iconSize: [16, 16],
+  iconAnchor: [8, 8],
+  popupAnchor: [-20, 20]
+});
+var atc_ctr = leaflet__WEBPACK_IMPORTED_MODULE_0___default.a.icon({
+  iconUrl: "/img/ATC_CTR.svg",
+  iconSize: [16, 16],
+  iconAnchor: [8, 8],
   popupAnchor: [-20, 20]
 }); // get vatsim data
 
@@ -2238,7 +2283,9 @@ var vatsimTarget = leaflet__WEBPACK_IMPORTED_MODULE_0___default.a.icon({
       vatsimLayer: null,
       vatsimAircraft: [],
       acf_markers: [],
-      ground_targets: []
+      ground_targets: [],
+      vatsimATCLayer: null,
+      vatsimATC: []
     };
   },
   mounted: function mounted() {
@@ -2250,7 +2297,7 @@ var vatsimTarget = leaflet__WEBPACK_IMPORTED_MODULE_0___default.a.icon({
     this.lmap.zoomControl.setPosition('topright');
     this.tangramLayer = tangram__WEBPACK_IMPORTED_MODULE_1___default.a.leafletLayer({
       scene: 'classic_map.yaml',
-      attribution: 'openAIP | &copy; OSM contributors',
+      attribution: 'openAIP | &copy; OSM contributors | <b style="color: red">NOT FOR REAL WORLD NAVIGATION</b>',
       selectionRadius: 10,
       events: {
         click: this.clickHandler
@@ -2259,6 +2306,7 @@ var vatsimTarget = leaflet__WEBPACK_IMPORTED_MODULE_0___default.a.icon({
     this.tangramLayer.addTo(this.lmap);
     this.lmap.setView(map_start_location.slice(0, 3), map_start_location[2]);
     this.vatsimLayer = leaflet__WEBPACK_IMPORTED_MODULE_0___default.a.layerGroup().addTo(this.lmap);
+    this.vatsimATCLayer = leaflet__WEBPACK_IMPORTED_MODULE_0___default.a.layerGroup().addTo(this.lmap);
     this.getVatsimData();
     setInterval(function () {
       _this.getVatsimData();
@@ -2287,6 +2335,80 @@ var vatsimTarget = leaflet__WEBPACK_IMPORTED_MODULE_0___default.a.icon({
         });
       });
       console.log('VATSIM Aircraft Updated');
+      axios__WEBPACK_IMPORTED_MODULE_2___default.a.get('/api/vatsim/atc').then(function (res) {
+        _this2.vatsimATCLayer.clearLayers(); // Ok, now let's check if we got coordinate data
+
+
+        res.data.forEach(function (e) {
+          var cs_split = e.callsign.split('_');
+          var marker = null;
+          var circle = null;
+
+          switch (cs_split[cs_split.length - 1]) {
+            case "DEL":
+              marker = leaflet__WEBPACK_IMPORTED_MODULE_0___default.a.marker([e.location.coordinates[1], e.location.coordinates[0]], {
+                icon: atc_del
+              }).addTo(_this2.vatsimATCLayer);
+              marker.bindTooltip(e.callsign + ' | ' + e.frequency + '<br>' + e.full_name);
+              circle = leaflet__WEBPACK_IMPORTED_MODULE_0___default.a.circle([e.location.coordinates[1], e.location.coordinates[0]], {
+                radius: nmToMeters(e.visual_range),
+                fill: false,
+                color: '#f96f23'
+              }).addTo(_this2.vatsimATCLayer);
+              break;
+
+            case "GND":
+              marker = leaflet__WEBPACK_IMPORTED_MODULE_0___default.a.marker([e.location.coordinates[1], e.location.coordinates[0]], {
+                icon: atc_gnd
+              }).addTo(_this2.vatsimATCLayer);
+              marker.bindTooltip(e.callsign + ' | ' + e.frequency + '<br>' + e.full_name);
+              circle = leaflet__WEBPACK_IMPORTED_MODULE_0___default.a.circle([e.location.coordinates[1], e.location.coordinates[0]], {
+                radius: nmToMeters(e.visual_range),
+                fill: false,
+                color: '#2ef923'
+              }).addTo(_this2.vatsimATCLayer);
+              break;
+
+            case "TWR":
+              marker = leaflet__WEBPACK_IMPORTED_MODULE_0___default.a.marker([e.location.coordinates[1], e.location.coordinates[0]], {
+                icon: atc_twr
+              }).addTo(_this2.vatsimATCLayer);
+              marker.bindTooltip(e.callsign + ' | ' + e.frequency + '<br>' + e.full_name);
+              circle = leaflet__WEBPACK_IMPORTED_MODULE_0___default.a.circle([e.location.coordinates[1], e.location.coordinates[0]], {
+                radius: nmToMeters(e.visual_range),
+                fill: false,
+                color: '#17c2c6'
+              }).addTo(_this2.vatsimATCLayer);
+              break;
+
+            case "APP":
+            case "DEP":
+              marker = leaflet__WEBPACK_IMPORTED_MODULE_0___default.a.marker([e.location.coordinates[1], e.location.coordinates[0]], {
+                icon: atc_app
+              }).addTo(_this2.vatsimATCLayer);
+              marker.bindTooltip(e.callsign + ' | ' + e.frequency + '<br>' + e.full_name);
+              circle = leaflet__WEBPACK_IMPORTED_MODULE_0___default.a.circle([e.location.coordinates[1], e.location.coordinates[0]], {
+                radius: nmToMeters(e.visual_range),
+                fill: false,
+                color: '#fcee21'
+              }).addTo(_this2.vatsimATCLayer);
+              break;
+
+            case "CTR":
+            case "FSS":
+              marker = leaflet__WEBPACK_IMPORTED_MODULE_0___default.a.marker([e.location.coordinates[1], e.location.coordinates[0]], {
+                icon: atc_ctr
+              }).addTo(_this2.vatsimATCLayer);
+              marker.bindTooltip(e.callsign + ' | ' + e.frequency + '<br>' + e.full_name);
+              circle = leaflet__WEBPACK_IMPORTED_MODULE_0___default.a.circle([e.location.coordinates[1], e.location.coordinates[0]], {
+                radius: nmToMeters(e.visual_range),
+                fill: false,
+                color: '#e51515'
+              }).addTo(_this2.vatsimATCLayer);
+              break;
+          }
+        });
+      });
     },
     clickHandler: function clickHandler(selection) {
       var _this3 = this;
@@ -2654,6 +2776,33 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //
@@ -7308,7 +7457,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n.sp-nav-item[data-v-63091152] {\n    flex: 1;\n    text-align: center;\n    line-height: 1;\n    padding: .25rem 1rem;\n    padding-bottom: .5rem;\n    color: white;\n    border: none;\n    background: transparent;\n    text-decoration: none;\n    text-underline: none;\n    transition: .2s;\n}\n.sp-nav-item[data-v-63091152]:hover {\n    background: #ffcc00;\n    transition: .2s;\n    color: white;\n    border: none;\n    text-decoration: none;\n    text-underline: none;\n}\n.sn-nav-item[data-v-63091152] {\n    width: 100%;\n    padding: .25rem auto;\n}\n.sn-nav-panel[data-v-63091152] {\n    float: left;\n    width: 60px;\n    height: 100vh;\n}\n.sn-brand[data-v-63091152] {\n    height: 60px;\n    background: #1a1a1a;\n}\n.sn-nav[data-v-63091152] {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    flex-flow: row wrap;\n    flex-wrap: wrap;\n    height: 100%;\n}\n", ""]);
+exports.push([module.i, "\n.sn-nav-item[data-v-63091152] {\n    flex: 1;\n    text-align: center;\n    line-height: 1;\n    max-width: 60px;\n    padding-bottom: .5rem;\n    color: white;\n    border: none;\n    background: transparent;\n    text-decoration: none;\n    text-underline: none;\n    transition: .2s;\n    margin: .5rem 0;\n}\n.sn-nav-item[data-v-63091152]:hover {\n    background: #ffcc00;\n    transition: .2s;\n    color: white;\n    border: none;\n    text-decoration: none;\n    text-underline: none;\n    cursor: pointer;\n}\n.sn-nav-item[data-v-63091152] {\n    width: 100%;\n    padding: .25rem auto;\n}\n.sn-nav-panel[data-v-63091152] {\n    float: left;\n    width: 60px;\n    height: 100vh;\n}\n.sn-brand[data-v-63091152] {\n    height: 60px;\n    background: #1a1a1a;\n}\n.sn-nav[data-v-63091152] {\n    flex-flow: row wrap;\n    flex-wrap: wrap;\n}\n", ""]);
 
 // exports
 
@@ -53873,27 +54022,36 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", [
-    _c(
-      "div",
-      {
-        staticStyle: {
-          display: "flex",
-          position: "fixed",
-          top: "0",
-          left: "0",
-          bottom: "0",
-          right: "0"
-        }
-      },
-      [
-        _c("SideInfoPanel"),
-        _vm._v(" "),
-        _c("div", { staticStyle: { "z-index": "-100" }, attrs: { id: "map" } })
-      ],
-      1
-    )
-  ])
+  return _c(
+    "div",
+    [
+      _c("side-nav-bar"),
+      _vm._v(" "),
+      _c(
+        "div",
+        {
+          staticStyle: {
+            display: "flex",
+            position: "fixed",
+            top: "0",
+            left: "60px",
+            bottom: "0",
+            right: "0"
+          }
+        },
+        [
+          _c("SideInfoPanel"),
+          _vm._v(" "),
+          _c("div", {
+            staticStyle: { "z-index": "-100" },
+            attrs: { id: "map" }
+          })
+        ],
+        1
+      )
+    ],
+    1
+  )
 }
 var staticRenderFns = []
 render._withStripped = true
@@ -54163,19 +54321,25 @@ var staticRenderFns = [
       ]),
       _vm._v(" "),
       _c("div", { staticClass: "sn-nav" }, [
-        _c("div", { staticClass: "sp-nav-item" }, [
+        _c("div", { staticClass: "sn-nav-item" }, [
           _c("div", [
             _c("i", { staticClass: "material-icons" }, [_vm._v("info")]),
             _vm._v(" "),
-            _c("div", [_vm._v("\n                    Info\n                ")])
+            _c("div", [
+              _vm._v("\n                    Airports\n                ")
+            ])
           ])
         ]),
         _vm._v(" "),
-        _c("div", { staticClass: "sp-nav-item" }, [
+        _c("div", { staticClass: "sn-nav-item" }, [
           _c("div", [
-            _c("i", { staticClass: "material-icons" }, [_vm._v("info")]),
+            _c("i", { staticClass: "material-icons" }, [
+              _vm._v("local_airport")
+            ]),
             _vm._v(" "),
-            _c("div", [_vm._v("\n                    Info\n                ")])
+            _c("div", [
+              _vm._v("\n                    Flights\n                ")
+            ])
           ])
         ])
       ])
@@ -68474,8 +68638,8 @@ vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vuex__WEBPACK_IMPORTED_MODULE_1__
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! /Users/taylorbroad/CardinalHorizon/VAOS/SimVectorNew/resources/js/app.js */"./resources/js/app.js");
-module.exports = __webpack_require__(/*! /Users/taylorbroad/CardinalHorizon/VAOS/SimVectorNew/resources/sass/app.scss */"./resources/sass/app.scss");
+__webpack_require__(/*! /Volumes/MainStorage/CardinalHorizon/SimVector/MainWebsite/resources/js/app.js */"./resources/js/app.js");
+module.exports = __webpack_require__(/*! /Volumes/MainStorage/CardinalHorizon/SimVector/MainWebsite/resources/sass/app.scss */"./resources/sass/app.scss");
 
 
 /***/ })

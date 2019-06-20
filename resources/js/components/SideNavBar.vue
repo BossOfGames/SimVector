@@ -4,22 +4,49 @@
             <img style="width: 100%; height: 100%;" src="/img/logo.svg"/>
         </div>
         <div class="sn-nav">
-            <div class="sp-nav-item">
+            <div class="sn-nav-item">
                 <div>
                     <i class="material-icons">info</i>
                     <div>
-                        Info
+                        Airports
                     </div>
                 </div>
             </div>
-            <div class="sp-nav-item">
+            <div class="sn-nav-item">
                 <div>
-                    <i class="material-icons">info</i>
+                    <i class="material-icons">local_airport</i>
                     <div>
-                        Info
+                        Flights
                     </div>
                 </div>
             </div>
+            <!--
+            <div class="sn-nav-item">
+                <div>
+                    <i class="material-icons">navigation</i>
+                    <div>
+                        Flight<br>
+                        Plan
+                    </div>
+                </div>
+            </div>
+            <div class="sn-nav-item">
+                <div>
+                    <i class="material-icons">map</i>
+                    <div>
+                        Charts
+                    </div>
+                </div>
+            </div>
+            <div class="sn-nav-item">
+                <div>
+                    <i class="material-icons">book</i>
+                    <div>
+                        KB
+                    </div>
+                </div>
+            </div>
+            -->
         </div>
     </div>
 </template>
@@ -31,11 +58,11 @@
 </script>
 
 <style scoped>
-    .sp-nav-item {
+    .sn-nav-item {
         flex: 1;
         text-align: center;
         line-height: 1;
-        padding: .25rem 1rem;
+        max-width: 60px;
         padding-bottom: .5rem;
         color: white;
         border: none;
@@ -43,14 +70,16 @@
         text-decoration: none;
         text-underline: none;
         transition: .2s;
+        margin: .5rem 0;
     }
-    .sp-nav-item:hover {
+    .sn-nav-item:hover {
         background: #ffcc00;
         transition: .2s;
         color: white;
         border: none;
         text-decoration: none;
         text-underline: none;
+        cursor: pointer;
     }
     .sn-nav-item {
         width: 100%;
@@ -66,11 +95,7 @@
         background: #1a1a1a;
     }
     .sn-nav {
-        display: flex;
-        align-items: center;
-        justify-content: center;
         flex-flow: row wrap;
         flex-wrap: wrap;
-        height: 100%;
     }
 </style>

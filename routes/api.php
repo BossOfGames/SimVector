@@ -23,3 +23,4 @@ Route::get('/airport/{icao}', 'AirportController@getAirport');
 Route::get('/flights/vatsim', 'VatsimDataController@getFlights');
 Route::get('/flights/vatsim_afv', 'VatsimDataController@getFlightsAFV');
 Route::get('/flights/vatsim/{icao}', 'AirportController@getDepArr');
+Route::get('/vatsim/atc', 'VatsimDataController@getATC');

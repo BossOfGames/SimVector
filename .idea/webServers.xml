@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="5cf49ff9-ca17-4894-85b6-466dde5ab614" name="VAOS_API" url="http://fsvaos.net">
+        <fileTransfer host="fsvaos.net" port="22" privateKey="$USER_HOME$/.ssh/google_compute_engine" rootFolder="/var/www" accessType="SFTP" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

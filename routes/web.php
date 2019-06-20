@@ -18,5 +18,7 @@ Route::get('/afv', function () {
     return view('afv');
 });
 Auth::routes();
-
+Route::get('php', function () {
+    phpinfo();
+});
 Route::get('/home', 'HomeController@index')->name('home');

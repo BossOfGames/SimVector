@@ -122,8 +122,8 @@ class vatsimdata extends Command
 
         // Now it's time to parse ALL the flights and controllers to see if we have them as connected when they're not.
         $atc = VatsimAtc::all();
-        $flights = Flight::where('state', '<=', 2)->get();
-
+        $flights = Flight::where('state', '<=', 1)->get();
+        //dd($flights->count());
         // First, controllers.
         foreach ($atc as $controller) {
             $found = false;
@@ -184,6 +184,7 @@ END;
                 'cid' => intval($data[1]),
                 'callsign' => $data[0],
                 'facility' => intval($data[18]),
+                'full_name' => $data[2],
                 'frequency' => floatval($data[4]),
                 'location' => [
                     'type' => 'Point',
@@ -194,6 +195,7 @@ END;
                     ->where('vatsim_prefix', explode('_', $data[0])[0])->first(),
                 'rating' => intval($data[16]),
                 'login_time' => preg_replace($regex, '$1', $data[37]),
+                'visual_range' => intval($data[19]),
                 'atis_message' => preg_replace($regex, '$1', $data[35])
             ]);
         }
@@ -203,7 +205,7 @@ END;
         // First check to see if the flight exists currently.
         $flight = Flight::where('callsign', '=', $data[0])
             ->where('vatsim_cid', '=', intval($data[1]))
-            ->where('state', '<=', 2)
+            ->where('state', '<', 2)
             ->with('flight_data')->first();
 
         // If the flight is not there, we need to create a new flight. Otherwise, use the flight we have and add position data.

@@ -1,6 +1,7 @@
 <template>
     <div>
-        <div style="display: flex; position: fixed;top:0; left: 0; bottom: 0; right: 0;">
+        <side-nav-bar></side-nav-bar>
+        <div style="display: flex; position: fixed;top:0; left: 60px; bottom: 0; right: 0;">
             <SideInfoPanel></SideInfoPanel>
             <div id="map" style="z-index: -100">
             </div>
@@ -9,6 +10,9 @@
 </template>
 
 <script>
+    function nmToMeters(nm) {
+        return nm * 1852;
+    }
     // @ is an alias to /src
     import L from 'leaflet';
     import Tangram from 'tangram';
@@ -26,6 +30,47 @@
         iconAnchor: [16,16],
         popupAnchor: [-20, 20],
     });
+
+    let depTarget = L.icon({
+        iconUrl: "/img/map/depTarget.svg",
+        iconSize: [24,24],
+        iconAnchor: [12,12]
+    });
+    let arrTarget = L.icon({
+        iconUrl: "/img/map/arrTarget.svg",
+        iconSize: [24,24],
+        iconAnchor: [12,12]
+    });
+    let atc_del = L.icon({
+        iconUrl: "/img/ATC_DEL.svg",
+        iconSize: [16,16],
+        iconAnchor: [8,8],
+        popupAnchor: [-20, 20],
+    });
+    let atc_gnd = L.icon({
+        iconUrl: "/img/ATC_GND.svg",
+        iconSize: [16,16],
+        iconAnchor: [8,8],
+        popupAnchor: [-20, 20],
+    });
+    let atc_twr = L.icon({
+        iconUrl: "/img/ATC_TWR.svg",
+        iconSize: [16,16],
+        iconAnchor: [8,8],
+        popupAnchor: [-20, 20],
+    });
+    let atc_app = L.icon({
+        iconUrl: "/img/ATC_APP.svg",
+        iconSize: [16,16],
+        iconAnchor: [8,8],
+        popupAnchor: [-20, 20],
+    });
+    let atc_ctr = L.icon({
+        iconUrl: "/img/ATC_CTR.svg",
+        iconSize: [16,16],
+        iconAnchor: [8,8],
+        popupAnchor: [-20, 20],
+    });
     // get vatsim data
     export default {
         name: 'Map',
@@ -37,7 +82,9 @@
                 vatsimLayer: null,
                 vatsimAircraft: [],
                 acf_markers: [],
-                ground_targets: []
+                ground_targets: [],
+                vatsimATCLayer: null,
+                vatsimATC: []
             }
         },
         mounted() {
@@ -46,7 +93,7 @@
             this.lmap.zoomControl.setPosition('topright');
             this.tangramLayer = Tangram.leafletLayer({
                 scene: 'classic_map.yaml',
-                attribution: 'openAIP | &copy; OSM contributors',
+                attribution: 'openAIP | &copy; OSM contributors | <b style="color: red">NOT FOR REAL WORLD NAVIGATION</b>',
                 selectionRadius: 10,
                 events: {
                     click: this.clickHandler
@@ -55,6 +102,7 @@
             this.tangramLayer.addTo(this.lmap);
             this.lmap.setView(map_start_location.slice(0, 3), map_start_location[2]);
             this.vatsimLayer = L.layerGroup().addTo(this.lmap);
+            this.vatsimATCLayer = L.layerGroup().addTo(this.lmap);
             this.getVatsimData();
             setInterval(() => {
                 this.getVatsimData();
@@ -74,6 +122,44 @@
                     })
                 });
                 console.log('VATSIM Aircraft Updated');
+                axios.get('/api/vatsim/atc').then(res => {
+                    this.vatsimATCLayer.clearLayers();
+                    // Ok, now let's check if we got coordinate data
+                    res.data.forEach(e => {
+                        let cs_split = e.callsign.split('_');
+                        let marker = null;
+                        let circle = null;
+                        switch (cs_split[cs_split.length-1]) {
+                            case "DEL":
+                                marker = L.marker([e.location.coordinates[1], e.location.coordinates[0]], {icon: atc_del}).addTo(this.vatsimATCLayer);
+                                marker.bindTooltip(e.callsign + ' | ' + e.frequency + '<br>' + e.full_name);
+                                circle = L.circle([e.location.coordinates[1], e.location.coordinates[0]], {radius: nmToMeters(e.visual_range), fill: false, color: '#f96f23'}).addTo(this.vatsimATCLayer);
+                                break;
+                            case "GND":
+                                marker = L.marker([e.location.coordinates[1], e.location.coordinates[0]], {icon: atc_gnd}).addTo(this.vatsimATCLayer);
+                                marker.bindTooltip(e.callsign + ' | ' + e.frequency + '<br>' + e.full_name);
+                                circle = L.circle([e.location.coordinates[1], e.location.coordinates[0]], {radius: nmToMeters(e.visual_range), fill: false, color: '#2ef923'}).addTo(this.vatsimATCLayer);
+                                break;
+                            case "TWR":
+                                marker = L.marker([e.location.coordinates[1], e.location.coordinates[0]], {icon: atc_twr}).addTo(this.vatsimATCLayer);
+                                marker.bindTooltip(e.callsign + ' | ' + e.frequency + '<br>' + e.full_name);
+                                circle = L.circle([e.location.coordinates[1], e.location.coordinates[0]], {radius: nmToMeters(e.visual_range), fill: false, color: '#17c2c6'}).addTo(this.vatsimATCLayer);
+                                break;
+                            case "APP":
+                            case "DEP":
+                                marker = L.marker([e.location.coordinates[1], e.location.coordinates[0]], {icon: atc_app}).addTo(this.vatsimATCLayer);
+                                marker.bindTooltip(e.callsign + ' | ' + e.frequency + '<br>' + e.full_name);
+                                circle = L.circle([e.location.coordinates[1], e.location.coordinates[0]], {radius: nmToMeters(e.visual_range), fill: false, color: '#fcee21'}).addTo(this.vatsimATCLayer);
+                                break;
+                            case "CTR":
+                            case "FSS":
+                                marker = L.marker([e.location.coordinates[1], e.location.coordinates[0]], {icon: atc_ctr}).addTo(this.vatsimATCLayer);
+                                marker.bindTooltip(e.callsign + ' | ' + e.frequency + '<br>' + e.full_name);
+                                circle = L.circle([e.location.coordinates[1], e.location.coordinates[0]], {radius: nmToMeters(e.visual_range), fill: false, color: '#e51515'}).addTo(this.vatsimATCLayer);
+                                break;
+                        }
+                    })
+                })
             },
             clickHandler(selection) {
                 // Update the airport currently selected.
