@@ -114,7 +114,7 @@
         },
         methods: {
             getVatsimData() {
-                axios.get('/api/flights/vatsim').then(response => {
+                axios.get('/vatsimflights.json').then(response => {
                     this.vatsimLayer.clearLayers();
                     response.data.forEach(e => {
                         let marker = L.marker([e.location.coordinates[1], e.location.coordinates[0]], {icon: vatsimTarget, rotationAngle: e.heading}).addTo(this.vatsimLayer);
@@ -122,7 +122,7 @@
                     })
                 });
                 console.log('VATSIM Aircraft Updated');
-                axios.get('/api/vatsim/atc').then(res => {
+                axios.get('/vatsimatc.json').then(res => {
                     this.vatsimATCLayer.clearLayers();
                     // Ok, now let's check if we got coordinate data
                     res.data.forEach(e => {

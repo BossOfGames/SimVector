@@ -91,6 +91,8 @@
         </nav>
         --}}
         <main>
+            {{-- <div style="padding: .5rem; text-align: center; background: #D32637; color: white; font-weight: bold; position: absolute; left: 0; right: 0; z-index: 20;">We're Currently Resolving Data Server Issues. Please Disregard Traffic and ATC for Accuracy. ~Taylor</div>
+            --}}
             @yield('content')
         </main>
     </div>

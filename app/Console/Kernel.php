@@ -25,6 +25,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->command('vatsim:data')->everyMinute();
+        // $schedule->command('vatsim:closeExisting')->everyFiveMinutes();
     }
 
     /**

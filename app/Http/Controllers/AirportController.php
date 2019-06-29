@@ -14,8 +14,8 @@ class AirportController extends Controller
         return response()->json(['airport' => $airport, 'charts' => $charts]);
     }
     public function getDepArr($icao) {
-        $dep = DB::connection('mongodb')->collection('flights')->where('dep_icao', $icao)->get();
-        $arr = DB::connection('mongodb')->collection('flights')->where('arr_icao', $icao)->get();
+        $dep = DB::connection('mongodb')->collection('flights')->where('dep_icao', $icao)->where('state', 1)->get();
+        $arr = DB::connection('mongodb')->collection('flights')->where('arr_icao', $icao)->where('state', 1)->get();
         return response()->json(['dep' => $dep, 'arr' => $arr]);
     }
 }

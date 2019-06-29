@@ -58,6 +58,8 @@ class vatsimdata extends Command
         $start_active = null;
         $start_prefile = null;
         $start_general = null;
+        $acfOut = array();
+        $atcOut = array();
         // Find where we need to start within the file to get the required data.
         foreach ($data_lines as $key=>$value)
         {
@@ -114,52 +116,13 @@ class vatsimdata extends Command
         foreach ($online_active as $data)
         {
             if ($data[3] === 'ATC') {
-                self::_processATC($data);
+                array_push($atcOut, self::_processATC($data));
             } else {
-                self::_processFlight($data);
+                array_push($acfOut, self::_processFlight($data));
             }
         }
-
-        // Now it's time to parse ALL the flights and controllers to see if we have them as connected when they're not.
-        $atc = VatsimAtc::all();
-        $flights = Flight::where('state', '<=', 1)->get();
-        //dd($flights->count());
-        // First, controllers.
-        foreach ($atc as $controller) {
-            $found = false;
-            foreach ($online_active as $data) {
-                if ($data[3] === 'PILOT')
-                    continue;
-
-                if ($controller->cid === intval($data[1]) && $controller->callsign === $data[0]) {
-                    $found = true;
-                    break;
-                }
-            }
-            if (!$found) {
-                VatsimAtc::destroy($controller->_id);
-            }
-        }
-
-        foreach ($flights as $flight) {
-            $found = false;
-            foreach ($online_active as $data) {
-                if ($data[3] === 'ATC')
-                    continue;
-                if ($flight->vatsim_cid === intval($data[1]) && $flight->callsign === $data[0]) {
-                    $found = true;
-                    break;
-                }
-            }
-            if (!$found) {
-                // close the flight.
-                $flight->state = 2;
-                $flight->save();
-            }
-        }
-        $output['aircraft'] = Flight::where('state', '<', 2)->get();
-        $output['atc'] = VatsimAtc::all();
-        event(new VatsimUpdated($output));
+        file_put_contents('public/vatsimatc.json', json_encode($atcOut));
+        file_put_contents('public/vatsimflights.json', json_encode($acfOut));
     }
     private function _processATC($data)
     {
@@ -176,11 +139,9 @@ class vatsimdata extends Command
 /x
 END;
 
-        // Check if we have someone currently connected.
-        $atc = VatsimAtc::where('cid', intval($data[1]))->where('callsign', $data[0])->first();
-        if (!$atc)
-        {
-            DB::connection('mongodb')->collection('vatsim_atc')->insert([
+
+
+            return [
                 'cid' => intval($data[1]),
                 'callsign' => $data[0],
                 'facility' => intval($data[18]),
@@ -197,22 +158,23 @@ END;
                 'login_time' => preg_replace($regex, '$1', $data[37]),
                 'visual_range' => intval($data[19]),
                 'atis_message' => preg_replace($regex, '$1', $data[35])
-            ]);
-        }
+            ];
     }
     private function _processFlight($data)
     {
         // First check to see if the flight exists currently.
+        /*
         $flight = Flight::where('callsign', '=', $data[0])
             ->where('vatsim_cid', '=', intval($data[1]))
-            ->where('state', '<', 2)
+            ->where('state', '=', 1)
             ->with('flight_data')->first();
 
         // If the flight is not there, we need to create a new flight. Otherwise, use the flight we have and add position data.
         if (!$flight)
         {
+        */
             $fn = explode(' ', $data[2]);
-            $newFlight = new Flight();
+            $newFlight = new \stdClass();
             $newFlight->callsign = $data[0];
             $newFlight->vatsim_cid = intval($data[1]);
             $newFlight->full_name = $data[2];
@@ -232,36 +194,40 @@ END;
                 'type' => 'Point',
                 'coordinates' => [ floatval($data[6]), floatval($data[5]) ]
             ];
-            $newFlight->save();
+            //$newFlight->save();
             // now run the initial data.
-            $newFlight->flight_data()->create([
-                'coordinates' => [floatval($data[6]), floatval($data[5])],
-                'heading' => intval($data[38]),
-                'altitude' => intval($data[7]),
-                'groundspeed' => intval($data[8])
-            ]);
-        } else {
-            $flight->dep_icao = $data[11];
-            $flight->flight_rules = intval(($data[21] === "I"? 1 : 0));
-            $flight->cruise = intval($data[12]);
-            $flight->arr_icao = $data[13];
-            $flight->route = $data[30];
-            $flight->transponder = intval($data[17]);
-            $flight->remarks = $data[29];
-            $flight->heading = intval($data[38]);
-            $flight->groundspeed = intval($data[8]);
-            $flight->altitude = intval($data[7]);
-            $flight->location = [
-                'type' => 'Point',
-                'coordinates' => [ floatval($data[6]), floatval($data[5]) ]
-            ];
-            $flight->flight_data()->create([
-                'coordinates' => [floatval($data[6]), floatval($data[5])],
-                'heading' => intval($data[38]),
-                'altitude' => intval($data[7]),
-                'groundspeed' => intval($data[8])
-            ]);
-            $flight->save();
-        }
+        return $newFlight;
+
+        /*
+        $newFlight->flight_data()->create([
+            'coordinates' => [floatval($data[6]), floatval($data[5])],
+            'heading' => intval($data[38]),
+            'altitude' => intval($data[7]),
+            'groundspeed' => intval($data[8])
+        ]);
+    } else {
+        $flight->dep_icao = $data[11];
+        $flight->flight_rules = intval(($data[21] === "I"? 1 : 0));
+        $flight->cruise = intval($data[12]);
+        $flight->arr_icao = $data[13];
+        $flight->route = $data[30];
+        $flight->transponder = intval($data[17]);
+        $flight->remarks = $data[29];
+        $flight->heading = intval($data[38]);
+        $flight->groundspeed = intval($data[8]);
+        $flight->altitude = intval($data[7]);
+        $flight->location = [
+            'type' => 'Point',
+            'coordinates' => [ floatval($data[6]), floatval($data[5]) ]
+        ];
+        $flight->flight_data()->create([
+            'coordinates' => [floatval($data[6]), floatval($data[5])],
+            'heading' => intval($data[38]),
+            'altitude' => intval($data[7]),
+            'groundspeed' => intval($data[8])
+        ]);
+        $flight->save();
+    }
+        */
     }
 }
