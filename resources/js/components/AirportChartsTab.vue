@@ -32,6 +32,9 @@
             charts() {
                 return this.$store.state.airport.charts;
             },
+            cycle() {
+                return this.$store.state.airport.cycle;
+            },
             sids() {
                 return this.$store.state.airport.charts.charts.filter(c => c.chart_code === "DP")
             },
@@ -53,7 +56,7 @@
         },
         methods: {
             openChart(chart) {
-                window.open('https://aeronav.faa.gov/d-tpp/1906/'+chart, '_blank')
+                window.open('https://aeronav.faa.gov/d-tpp/'+ this.cycle +'/'+chart, '_blank')
             }
         }
     }

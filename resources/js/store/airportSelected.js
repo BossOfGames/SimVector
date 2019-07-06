@@ -5,6 +5,7 @@ export default {
     state: {
         info: null,
         charts: null,
+        cycle: null,
         loading: false
     },
     mutations: {
@@ -12,9 +13,11 @@ export default {
             if (payload == null) {
                 state.info = null;
                 state.charts = null;
+                state.cycle = null;
             } else {
                 state.info = payload.airport;
                 state.charts = payload.charts;
+                state.cycle = payload.cycle;
             }
         },
         SET_LOADING(state, payload) {

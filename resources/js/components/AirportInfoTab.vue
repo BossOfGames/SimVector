@@ -75,7 +75,7 @@
         },
         methods: {
             openChart(chart) {
-                window.open('https://aeronav.faa.gov/d-tpp/1906/'+chart, '_blank')
+                window.open('https://aeronav.faa.gov/d-tpp/'+this.cycle+'/'+chart, '_blank')
             },
             getDepArr(icao) {
                 // Get the METAR
@@ -103,6 +103,9 @@
                 else {
                     return null
                 }
+            },
+            cycle() {
+                return this.$store.state.airport.cycle;
             },
             apd() {
                 return this.$store.state.airport.charts.charts.filter(c =>  c.chart_code === "APD")
