@@ -128,34 +128,53 @@
                     res.data.forEach(e => {
                         let cs_split = e.callsign.split('_');
                         let marker = null;
+                        let fir = null;
                         let circle = null;
+                        let bounds = [];
                         switch (cs_split[cs_split.length-1]) {
                             case "DEL":
                                 marker = L.marker([e.location.coordinates[1], e.location.coordinates[0]], {icon: atc_del}).addTo(this.vatsimATCLayer);
                                 marker.bindTooltip(e.callsign + ' | ' + e.frequency + '<br>' + e.full_name);
-                                circle = L.circle([e.location.coordinates[1], e.location.coordinates[0]], {radius: nmToMeters(e.visual_range), fill: false, color: '#f96f23'}).addTo(this.vatsimATCLayer);
+                                circle = L.circle([e.location.coordinates[1], e.location.coordinates[0]], {radius: nmToMeters(5), fill: false, color: '#f96f23'}).addTo(this.vatsimATCLayer);
                                 break;
                             case "GND":
                                 marker = L.marker([e.location.coordinates[1], e.location.coordinates[0]], {icon: atc_gnd}).addTo(this.vatsimATCLayer);
                                 marker.bindTooltip(e.callsign + ' | ' + e.frequency + '<br>' + e.full_name);
-                                circle = L.circle([e.location.coordinates[1], e.location.coordinates[0]], {radius: nmToMeters(e.visual_range), fill: false, color: '#2ef923'}).addTo(this.vatsimATCLayer);
+                                circle = L.circle([e.location.coordinates[1], e.location.coordinates[0]], {radius: nmToMeters(5), fill: false, color: '#2ef923'}).addTo(this.vatsimATCLayer);
                                 break;
                             case "TWR":
                                 marker = L.marker([e.location.coordinates[1], e.location.coordinates[0]], {icon: atc_twr}).addTo(this.vatsimATCLayer);
                                 marker.bindTooltip(e.callsign + ' | ' + e.frequency + '<br>' + e.full_name);
-                                circle = L.circle([e.location.coordinates[1], e.location.coordinates[0]], {radius: nmToMeters(e.visual_range), fill: false, color: '#17c2c6'}).addTo(this.vatsimATCLayer);
+                                circle = L.circle([e.location.coordinates[1], e.location.coordinates[0]], {radius: nmToMeters(10), fill: false, color: '#17c2c6'}).addTo(this.vatsimATCLayer);
                                 break;
                             case "APP":
                             case "DEP":
                                 marker = L.marker([e.location.coordinates[1], e.location.coordinates[0]], {icon: atc_app}).addTo(this.vatsimATCLayer);
                                 marker.bindTooltip(e.callsign + ' | ' + e.frequency + '<br>' + e.full_name);
-                                circle = L.circle([e.location.coordinates[1], e.location.coordinates[0]], {radius: nmToMeters(e.visual_range), fill: false, color: '#fcee21'}).addTo(this.vatsimATCLayer);
+                                circle = L.circle([e.location.coordinates[1], e.location.coordinates[0]], {radius: nmToMeters(50), fill: false, color: '#fcee21'}).addTo(this.vatsimATCLayer);
                                 break;
                             case "CTR":
                             case "FSS":
                                 marker = L.marker([e.location.coordinates[1], e.location.coordinates[0]], {icon: atc_ctr}).addTo(this.vatsimATCLayer);
                                 marker.bindTooltip(e.callsign + ' | ' + e.frequency + '<br>' + e.full_name);
-                                circle = L.circle([e.location.coordinates[1], e.location.coordinates[0]], {radius: nmToMeters(e.visual_range), fill: false, color: '#e51515'}).addTo(this.vatsimATCLayer);
+                                // get the store airspace
+                                fir = this.$store.getters.getFir(cs_split[0]);
+                                if(fir === undefined) {
+                                    setTimeout(() => {
+                                        fir = this.$store.getters.getFir(cs_split[0]);
+                                        fir.geometry.coordinates.forEach(e => {
+                                            bounds.push([e[1],e[0]]);
+                                        });
+                                        circle = L.polygon(bounds, {fill: false, color: '#e51515'}).addTo(this.vatsimATCLayer)
+                                    }, 3000);
+                                } else if (fir) {
+                                    fir.geometry.coordinates.forEach(e => {
+                                        bounds.push([e[1],e[0]]);
+                                    });
+                                    circle = L.polygon(bounds, {fill: false, color: '#e51515'}).addTo(this.vatsimATCLayer);
+                                } else {
+                                    circle = L.circle([e.location.coordinates[1], e.location.coordinates[0]], {radius: nmToMeters(e.visual_range), fill: false, color: '#e51515'}).addTo(this.vatsimATCLayer);
+                                }
                                 break;
                         }
                     })

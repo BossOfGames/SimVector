@@ -16,6 +16,9 @@ textures:
             controlled: [0,0,64,64]
             uncontrolled: [64,0,64,64]
 
+scene:
+    background:
+        color: '#1a1a1a'
 styles:
     airport-icons:
         base: points
@@ -24,14 +27,14 @@ styles:
             sprite_default: controlled
             texture: airports
 sources:
-    nextzen:
+    nextzen_k:
         type: GeoJSON
         url: https://tile.nextzen.org/tilezen/vector/v1/512/all/{z}/{x}/{y}.json
         url_params:
             api_key: J340hxOHS_qfDrYU1iUIGg
         max_zoom: 16
         tile_size: 512
-    nextzen_k:
+    nextzen:
         type: MVT
         url: https://tile.nextzen.org/tilezen/vector/v1/all/{z}/{x}/{y}.mvt
         url_params:
@@ -46,7 +49,16 @@ sources:
     firs:
         type: GeoJSON
         url: firs.json
+    map_fallback:
+        type: GeoJSON
+        url: map_fallback.json
 layers:
+    land:
+        data: { source: map_fallback }
+        draw:
+            polygons:
+                order: 1
+                color: '#333'
     earth:
         data: { source: nextzen }
         draw:

@@ -39,13 +39,7 @@ window.Echo.channel('laravel_database_flight-data').listen('VatsimUpdated', e =>
 import store from './store'
 const app = new Vue({
     created() {
-        this.$echo.channel('laravel_database_flight-data')
-            .listen('VatsimUpdated', (e) => {
-                console.log(e);
-                e.aircraft.forEach(c => {
-                    this.$store.dispatch('setAircraft', c)
-                })
-            });
+        this.$store.dispatch('initFirData');
     },
     components: {
         svmap,
