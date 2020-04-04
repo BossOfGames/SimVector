@@ -10,6 +10,7 @@ use App\Models\VatsimFlight;
 use GuzzleHttp\Client;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class vatsimdata extends Command
 {
@@ -45,84 +46,27 @@ class vatsimdata extends Command
     public function handle()
     {
         $client = new Client();
-        $res = $client->request('GET', 'http://info.vroute.net/vatsim-data.txt', [
+        //$res = $client->request('GET', 'http://info.vroute.net/vatsim-data.txt', [])->getBody();
 
-        ])->getBody();
+//        file_put_contents('ctp/vatsim_'.Carbon::now().'.txt', $res);
 
-        $online_active = array();
-        $online_prefile = array();
-        $online_general = array();
-        // TIme to parse this bitch for data. First, let's break out all the active clients. That's the only thing we're worried about.
-        $data_lines = explode("\n", $res);
-        // find the line with all the active data.
-        $start_active = null;
-        $start_prefile = null;
-        $start_general = null;
-        $acfOut = array();
-        $atcOut = array();
-        // Find where we need to start within the file to get the required data.
-        foreach ($data_lines as $key=>$value)
-        {
-            if ($value === "!GENERAL:\r")
-            {
-                $start_general = $key;
-                $start_general++;
-                continue;
-            }
-            if ($value === "!CLIENTS:\r")
-            {
-                $start_active = $key;
-                $start_active++;
-                continue;
-            }
-            if ($value === "!PREFILE:\r")
-            {
-                $start_prefile = $key;
-                $start_prefile++;
-                continue;
-            }
-        }
-        foreach ($data_lines as $key=>$line)
-        {
-            if ($key <= $start_general)
-                continue;
-            if ($line === ";\r")
-                continue;
-            if ($line === "!VOICE SERVERS:\r")
-                break;
-            array_push($online_general, explode(' = ', $line));
-        }
-        foreach ($data_lines as $key=>$line)
-        {
-            if ($key <= $start_active)
-                continue;
-            if ($line === ";\r")
-                continue;
-            if ($line === "!SERVERS:\r")
-                break;
-            array_push($online_active, explode(':', $line));
-        }
+        $res2 = $client->request('GET', 'http://us.data.vatsim.net/vatsim-data.json', [])->getBody();
 
-        foreach ($data_lines as $key=>$line)
+        $res = json_decode($res2, true);
+//        file_put_contents('ctp/vatsim_'.Carbon::now().'.json', $res2);
+
+        $acfOut = [];
+        foreach ($res['pilots'] as $data)
         {
-            if ($key <= $start_prefile)
-                continue;
-            if ($line === ";\r" || $line === ";   END\r")
-                continue;
-            if ($line === "")
-                continue;
-            array_push($online_prefile, explode(':', $line));
+            array_push($acfOut, self::_processFlightNew($data));
         }
-        foreach ($online_active as $data)
-        {
-            if ($data[3] === 'ATC') {
-                array_push($atcOut, self::_processATC($data));
-            } else {
-                array_push($acfOut, self::_processFlight($data));
-            }
-        }
-        file_put_contents('public/vatsimatc.json', json_encode($atcOut));
-        file_put_contents('public/vatsimflights.json', json_encode($acfOut));
+        $fcout = [];
+        $fcout['aircraft'] = [
+            'type' => 'FeatureCollection',
+            'features' => $acfOut
+        ];
+        //file_put_contents('public/vatsimatc.json', json_encode($atcOut));
+        file_put_contents('public/vatsimflights.json', json_encode($fcout));
     }
     private function _processATC($data)
     {
@@ -160,6 +104,26 @@ END;
                 'atis_message' => preg_replace($regex, '$1', $data[35])
             ];
     }
+    private function _processFlightNew($data) {
+        $geo = [];
+        $geo['type'] = 'Feature';
+        $geo['geometry'] = [
+            'type' => 'Point',
+            'coordinates' => [ 
+                floatval($data['longitude']), 
+                floatval($data['latitude']), 
+                floatval($data['altitude']) 
+                ]
+        ];
+        $geo['properties'] = [
+            'callsign' => $data['callsign'],
+            'heading' => intval($data['heading'])
+        ];
+        if ($geo == []) {
+            dd($data);
+        }
+        return $geo;
+    }
     private function _processFlight($data)
     {
         // First check to see if the flight exists currently.
@@ -175,6 +139,7 @@ END;
         */
             $fn = explode(' ', $data[2]);
             $newFlight = new \stdClass();
+            /*
             $newFlight->callsign = $data[0];
             $newFlight->vatsim_cid = intval($data[1]);
             $newFlight->full_name = $data[2];
@@ -194,9 +159,20 @@ END;
                 'type' => 'Point',
                 'coordinates' => [ floatval($data[6]), floatval($data[5]) ]
             ];
+            */
+            $geo = [];
+            $geo['type'] = 'Feature';
+            $geo['geometry'] = [
+                'type' => 'Point',
+                'coordinates' => [ floatval($data[6]), floatval($data[5]) ]
+            ];
+            $geo['properties'] = [
+                'callsign' => $data[0],
+                'heading' => intval($data[38])
+            ];
             //$newFlight->save();
             // now run the initial data.
-        return $newFlight;
+        return $geo;
 
         /*
         $newFlight->flight_data()->create([

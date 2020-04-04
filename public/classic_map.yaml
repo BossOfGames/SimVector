@@ -15,17 +15,39 @@ textures:
         sprites:
             controlled: [0,0,64,64]
             uncontrolled: [64,0,64,64]
+            aircraft: [128,0,64,64]
 
 scene:
     background:
         color: '#1a1a1a'
 styles:
-    airport-icons:
+    icons:
         base: points
         draw:
             sprite: function() { return feature.kind; }
             sprite_default: controlled
             texture: airports
+
+    hillshade:
+        base: raster
+        lighting: false
+        shaders:
+            blocks:
+                global: |
+                    float unpack(vec4 h) {
+                        // GPU reads each 0-255 channel as range 0-1, right where we want it
+                        // assemble to get height
+                        return (h.r * 1. + h.g / 256. + h.b / 65536.);
+                    }
+                color: |
+                    float height = unpack(color);
+                    color = vec4(1.0);
+                    // Color ramps
+                    vec3 colors[5];
+                    colors[0] = vec3(0.);
+                    colors[1] = vec3(1.);
+                    color.rgb = mix(colors[0], colors[1], height * 50. - 25.);
+
 sources:
     nextzen_k:
         type: GeoJSON
@@ -41,24 +63,17 @@ sources:
             api_key: J340hxOHS_qfDrYU1iUIGg
         max_zoom: 16
     openaip:
-        type: GeoJSON
-        url: output.json
+        type: MVT
+        url: https://storage.googleapis.com/tiles.myflightdeck.net/airspace/airspace/{z}/{x}/{y}.pbf
+        max_zoom: 12
     airports:
         type: GeoJSON
         url: air.json
     firs:
         type: GeoJSON
         url: firs.json
-    map_fallback:
-        type: GeoJSON
-        url: map_fallback.json
+
 layers:
-    land:
-        data: { source: map_fallback }
-        draw:
-            polygons:
-                order: 1
-                color: '#333'
     earth:
         data: { source: nextzen }
         draw:
@@ -112,7 +127,7 @@ layers:
                   - 5.25px
                 - - 17
                   - 12m
-    boundries:
+    airspace:
         data: {source: openaip }
         b:
             filter: { kind: b }
@@ -200,7 +215,7 @@ layers:
         large_airport:
             filter: {kind: large_airport, $zoom: {min: 6}}
             draw:
-                airport-icons:
+                icons:
                     order: 2000
                     priority: 2
                     interactive: true
@@ -223,7 +238,7 @@ layers:
         medium_airport:
             filter: {kind: medium_airport, $zoom: {min: 8}}
             draw:
-                airport-icons:
+                icons:
                     order: 2000
                     priority: 3
                     interactive: true
@@ -252,7 +267,7 @@ layers:
         small_airport:
             filter: {kind: small_airport, $zoom: {min: 10}}
             draw:
-                airport-icons:
+                icons:
                     order: 2000
                     priority: 4
                     interactive: true
@@ -350,17 +365,6 @@ layers:
                             size: 11pt
                             family: Lucida Grande
                             fill: white
-    places:
-        data: {source: nextzen}
-        city:
-            filter: {$zoom: {min: 8}}
-            draw:
-                text:
-                    font:
-                        fill: '#cccccc'
-                        weight: 500
-                        size: 14px
-                        family: Helvetica
     buildings:
         data: { source: nextzen }
         draw:
@@ -423,3 +427,23 @@ layers:
                         weight: 500
                         size: 12px
                         family: Helvetica
+    aircraft:
+        data: { source: aircraft }
+        draw:
+            icons:
+                order: 3000
+                priority: 1
+                angle: function() { return feature.heading; }
+                interactive: true
+                collide: false
+                sprite: "aircraft"
+                color: "#00f98e"
+                text:
+                    collide: false
+                    text_source: function() { return feature.callsign; }
+                    anchor: [bottom, top, right, left, bottom-right, bottom-left, top-right, top-left]
+                    font:
+                        size: 11pt
+                        family: Lucida Grande
+                        fill: "#00f98e"
+                        stroke: { color: black, width: 3 }
