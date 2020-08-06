@@ -33,7 +33,7 @@ const vuetify = new Vuetify({
         dark: true,
         themes: {
             dark: {
-                primary: window.appSettings.colors.primary
+                primary: '#FFCC00'
             }
         },
         options: {

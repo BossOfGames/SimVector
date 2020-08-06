@@ -51,6 +51,11 @@
         margin-top: auto;
         background: #333;
     }
+    @supports (-webkit-touch-callout: none) {
+        .footer-nav {
+            position: fixed;
+        }
+}
     .footer-nav-item {
         flex: 1;
         text-align: center;

@@ -20,7 +20,7 @@ lights:
         diffuse: [1,1, 1]
 scene:
     background:
-        color: '#333'
+        color: '#c7d6b2'
 styles:
     icons:
         base: points
@@ -29,7 +29,9 @@ styles:
             sprite: function() { return feature.kind; }
             sprite_default: controlled
             texture: airports
-
+    overlay_lines:
+        base: lines
+        blend: overlay
     elevation:
         base: raster
         lighting: false
@@ -63,7 +65,7 @@ styles:
                     float step6 = 0.545;
                     float step7 = 0.559;
                     float step8 = 0.57;
-                    
+
                     color.rgb = mix(colors[0], colors[1], step(step1, height));
                     color.rgb = mix(color.rgb, colors[2], step(step2, height));
                     color.rgb = mix(color.rgb, colors[3], step(step3, height));
@@ -88,18 +90,18 @@ styles:
                 mult: 2.5
             blocks:
                 global: |
-                    float getGrayscale(vec3 p) { 
+                    float getGrayscale(vec3 p) {
                         float alpha = 1.0 - ((p.r + p.g + p.b) / 3.0);
                         if (alpha >= 0.5) {
                             alpha = .5;
                         }
-                        return alpha; 
+                        return alpha;
                     }
                 normal: |
                     normal = normal * mult - (mult - 1.);
                 filter: |
                     color.rgba = vec4(0, 0, 0, getGrayscale(color.rgb));
-        
+
 
 sources:
     nextzen:
@@ -115,9 +117,9 @@ sources:
         url_params:
             api_key: J340hxOHS_qfDrYU1iUIGg
         max_zoom: 16
-    openaip:
+    simvector:
         type: MVT
-        url: https://storage.googleapis.com/tiles.myflightdeck.net/airspace/airspace/{z}/{x}/{y}.pbf
+        url: https://tiles.simvector.net/tiles/{z}/{x}/{y}.pbf
         max_zoom: 10
     elevation:
         type: Raster
@@ -133,17 +135,19 @@ sources:
         max_zoom: 14
     airports:
         type: MVT
-        url: https://storage.googleapis.com/tiles.myflightdeck.net/airports/{z}/{x}/{y}.pbf
-        max_zoom: 6
+        url: https://tiles.simvector.net/airports/{z}/{x}/{y}.pbf
         min_zoom: 6
-
+        max_zoom: 6
+    firs:
+        type: GeoJSON
+        url: firs.json
 layers:
     terrain:
         data: { source: elevation, layer: _default }
         draw:
             elevation:
                 order: 0
-    
+
     hillsides:
         data: { source: normals, layer: _default }
         draw:
@@ -163,16 +167,16 @@ layers:
             draw:
                 lines:
                     order: function() { return feature.sort_rank; }
-                    color: '#333333'
+                    color: [0,0,0,.5]
                     width: [[3, 2px],[6,3px]]
         state:
             filter: {kind: region, $zoom: {min: 5}}
             draw:
-                lines:
+                overlay_lines:
                     dash: [5, 2, 3, 2, 3, 2]
                     order: function() { return feature.sort_rank; }
-                    color: '#333333'
-                    width: 2.5px
+                    color: [0,0,0,.4]
+                    width: 1.3px
 
     landuse:
         data: { source: nextzen}
@@ -198,13 +202,19 @@ layers:
         cities:
             filter: {kind: ['urban_area', 'urban', 'commercial'], $zoom: {max: 9}}
             draw:
-                lighting: false
                 polygons:
                     color: '#f8f765'
                     order: function() { return feature.sort_rank; }
-                    
+    firs:
+        data: { source: firs }
+        draw:
+            overlay_lines:
+                dash: [5, 4]
+                order: 5000
+                color: black
+                width: [[9, 2.5px],[12, 4px]]
     airspace:
-        data: {source: openaip }
+        data: {source: simvector }
         b:
             filter: { kind: b }
             draw:
@@ -317,10 +327,7 @@ layers:
                     - - 17
                       - 12m
     airports:
-        data:
-            source: airports
-        filter: {not: {kind: [closed, heliport]}, $zoom: {max: 17}}
-
+        data: {source: airports}
         large_airport:
             filter: {kind: large_airport, $zoom: {min: 6}}
             draw:

@@ -33,7 +33,6 @@
 </head>
 <body>
     <div id="app">
-        {{--
         <nav class="navbar navbar-expand-md navbar-dark bg-dark shadow-sm">
             <div class="container-fluid">
                 <a class="navbar-brand" href="{{ url('/') }}">
@@ -89,7 +88,6 @@
                 </div>
             </div>
         </nav>
-        --}}
         <main>
             {{-- <div style="padding: .5rem; text-align: center; background: #D32637; color: white; font-weight: bold; position: absolute; left: 0; right: 0; z-index: 20;">We're Currently Resolving Data Server Issues. Please Disregard Traffic and ATC for Accuracy. ~Taylor</div>
             --}}

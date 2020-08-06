@@ -62,13 +62,15 @@ sources:
         url_params:
             api_key: J340hxOHS_qfDrYU1iUIGg
         max_zoom: 16
-    openaip:
+    simvector:
         type: MVT
-        url: https://storage.googleapis.com/tiles.myflightdeck.net/airspace/airspace/{z}/{x}/{y}.pbf
-        max_zoom: 12
+        url: https://tiles.simvector.net/tiles/{z}/{x}/{y}.pbf
+        max_zoom: 10
     airports:
-        type: GeoJSON
-        url: air.json
+        type: MVT
+        url: https://tiles.simvector.net/airports/{z}/{x}/{y}.pbf
+        min_zoom: 6
+        max_zoom: 6
     firs:
         type: GeoJSON
         url: firs.json
@@ -128,7 +130,7 @@ layers:
                 - - 17
                   - 12m
     airspace:
-        data: {source: openaip }
+        data: {source: simvector }
         b:
             filter: { kind: b }
             draw:

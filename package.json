@@ -13,18 +13,19 @@
         "axios": "^0.18.1",
         "bootstrap": "^4.4.1",
         "cross-env": "^5.2.1",
-        "jquery": "^3.2",
+        "jquery": "^3.5.0",
         "laravel-mix": "^4.1.4",
         "lodash": "^4.17.15",
         "popper.js": "^1.16.1",
         "resolve-url-loader": "^2.3.1",
-        "sass": "^1.26.3",
+        "sass": "^1.26.5",
+        "@babel/compat-data": "^7.9.0",
         "sass-loader": "^7.3.1",
         "vue": "^2.6.11",
         "vue-template-compiler": "^2.6.11"
     },
     "dependencies": {
-        "laravel-echo": "^1.6.1",
+        "laravel-echo": "^1.7.0",
         "leaflet": "^1.6.0",
         "leaflet-canvas-marker": "^0.2.0",
         "leaflet-rotatedmarker": "^0.2.0",
@@ -33,7 +34,8 @@
         "vue-echo-laravel": "0.0.6",
         "vue-laravel-echo": "0.0.1",
         "vue-router": "^3.1.6",
-        "vuex": "^3.1.3",
+        "vuetify": "^2.2.26",
+        "vuex": "^3.3.0",
         "xml-js": "^1.6.11"
     }
 }

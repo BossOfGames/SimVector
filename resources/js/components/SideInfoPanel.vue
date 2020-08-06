@@ -106,6 +106,7 @@
                 this.$store.commit('SET_AIRPORT', null);
             }
         },
+        props: ['icao'],
         watch: {
             airport(n) {
                 // Get the wx

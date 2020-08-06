@@ -4,7 +4,6 @@
         <v-container fluid>
             <v-layout row wrap>
                 <v-flex md6 v-for="flight in flights" :key="flight.id">
-                    <FlightCard :info="flight"></FlightCard>
                 </v-flex>
             </v-layout>
         </v-container>
@@ -12,10 +11,9 @@
 </template>
 
 <script>
-    import FlightCard from "../../components/FlightCard";
     export default {
         name: "FlightListView",
-        components: {FlightCard},
+        components: {},
         data() {
             return {
                 flights: [

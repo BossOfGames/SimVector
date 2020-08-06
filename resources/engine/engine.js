@@ -20,13 +20,12 @@ window.Vue = require('vue');
 //files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default));
 
 import svmap from './components/SVMap'
-import svmapafv from './components/SVMapAFV'
 /**
  * Next, we will create a fresh Vue application instance and attach it to
  * the page. Then, you may begin adding components to this application
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
-import SideInfoPanel from "./components/SideInfoPanel";
+
 import vle from 'vue-echo-laravel'
 //Vue.use(vle, window.Echo);
 import L from 'leaflet'
@@ -39,9 +38,10 @@ window.Echo.channel('laravel_database_flight-data').listen('VatsimUpdated', e =>
 import store from './store'
 const app = new Vue({
     created() {
+        this.$store.dispatch('initFirData');
     },
     components: {
-        SideInfoPanel
+        svmap
     },
     store,
     el: '#app',

@@ -11,8 +11,7 @@
     <title>{{ config('app.name', 'SimVector') }}</title>
 
     <!-- Scripts -->
-    <script src="{{ mix('js/app.js') }}" defer></script>
-
+    <script src="{{ mix('js/engine.js') }}" defer></script>
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-139927183-1"></script>
     <script>
@@ -22,11 +21,17 @@
 
         gtag('config', 'UA-139927183-1');
     </script>
+    <style>
+        body {
+            height: 100%;
+            margin: 0;
+        }
+    </style>
 
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css?family=Material+Icons" rel="stylesheet" type="text/css">
-
+    <link rel="stylesheet" href="https://cdn.materialdesignicons.com/5.1.45/css/materialdesignicons.min.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css" />
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
