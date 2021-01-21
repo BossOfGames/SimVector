@@ -29,7 +29,7 @@
         "leaflet": "^1.6.0",
         "leaflet-canvas-marker": "^0.2.0",
         "leaflet-rotatedmarker": "^0.2.0",
-        "socket.io": "^2.3.0",
+        "socket.io": "^2.4.0",
         "tangram": "^0.18.2",
         "vue-echo-laravel": "0.0.6",
         "vue-laravel-echo": "0.0.1",
